@@ -1,0 +1,51 @@
+#include <iostream>
+#include <vector>
+
+struct Vector2D {
+    double x = 0.0;
+    double y = 0.0;
+
+    Vector2D operator+(const Vector2D& other) const {
+        return {x + other.x, y + other.y};
+    }
+    Vector2D operator*(double scalar) const {
+        return {x * scalar, y * scalar};
+    }
+};
+
+class Particle {
+public:
+    double mass;
+    Vector2D position;
+    Vector2D velocity;
+
+    Particle(double m, Vector2D pos, Vector2D vel)
+    : mass(m), position(pos), velocity(vel) {}
+
+    void integrate(const Vector2D& force, double dt) {
+        Vector2D acceleration = force * (1.0 / mass);
+        position = position + velocity * dt;
+        velocity = velocity + acceleration * dt;
+    }
+};
+
+int main() {
+    Particle ball(1.0, {0.0, 100.0}, {0.0, 0.0});
+    double dt = 0.01;
+    double g = 9.81;
+    double drag_coeff = 0.1;
+
+    std::cout << "Time\tHeight\tVelocity\n";
+
+    for (double t = 0.0; t <= 5.0 && ball.position.y > 0; t += dt) {
+        Vector2D gravity = {0.0, -ball.mass * g};
+        Vector2D drag = ball.velocity * (-drag_coeff);
+        Vector2D total_force = gravity + drag;
+        ball.integrate(total_force, dt);
+        if ((int)(t * 100) % 50 == 0) {
+            std::cout << t << "s\t" << ball.position.y << "m\t" << ball.velocity.y << "m/s\n";
+        }
+    }
+
+    return 0;
+}
